@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{shi2011}
+Y.~Shi, P.~Lawford, and R.~Hose, ``Review of zero-d and 1-d models of blood flow in the cardiovascular system,'' {\em BioMedical Engineering}, 2011.
+
+\bibitem{hall2021guyton}
+J.~E. Hall and M.~E. Hall, {\em Guyton and Hall. Textbook of Medical Physiology}.
+\newblock 2021.
+
+\bibitem{westerhof2009}
+N.~Westerhof, J.-W. Lankhaar, and B.~E. Westerhof, ``The arterial windkessel,'' {\em Medical \& Biological Engineering \& Computing}, vol.~47, pp.~131--141, 2009.
+
+\bibitem{segers2003}
+P.~Segers, N.~Stergiopulos, and N.~Westerhof, ``Systemic and pulmonary hemodynamics assessed with a lumped-parameter heart-arterial interaction model,'' {\em Journal of Biomechanics}, vol.~47, pp.~185--199, 2003.
+
+\bibitem{wellstead1979}
+P.~E. Wellstead, {\em Introduction to Physical System Modelling}.
+\newblock Academic Press, 1979.
+
+\end{thebibliography}

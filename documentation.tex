@@ -5,6 +5,8 @@
 \usepackage{graphicx}
 \usepackage{cite}
 \usepackage{hyperref}
+\usepackage{circuitikz}
+\usepackage{tikz}
 
 \begin{document}
 \title{Proyecto}
@@ -17,10 +19,177 @@ Universidad Nacional Autónoma de México}}
 
 \end{abstract}
 
-\section{Fundamentos del Sistema y Abstracción
-Topológica}
-\section{Formulación del Grafo y Restricciones de 
+\section{Fundamentos del Sistema}
+\subsection{Fisiología Vascular y su Analogía Eléctrica}
+El sistema cardiovascular transporta sangre impulsada por 
+un gradiente de presión que debe vencer la impedancia vascular \cite{shi2011}.
+Físicamente, la naturaleza distensible de las arterias (complianza) permite 
+acomodar el flujo pulsátil eyectado por el corazón, reduciendo las pulsaciones 
+de presión para proporcionar un flujo continuo en los capilares \cite{hall2021guyton}.
+Para modelar matemáticamente este comportamiento, se recurre a la analogía eléctrico-hidráulica. 
+En este esquema, la ecuación de continuidad (conservación de masa) es el análogo de la Ley 
+de Corrientes de Kirchhoff, mientras que las ecuaciones de Navier-Stokes (balance de momentum) 
+equivalen a la relación de voltaje-corriente de la Ley de Voltajes de Kirchhoff \cite{hall2021guyton}.
+\subsection{Modelo Windkessel Clásico}
+El modelo Windkessel abstrae el sistema arterial usando solo una resistencia periférica total ($R$) 
+y una complianza arterial total ($C$) \cite{westerhof2009}. Cuando la válvula aórtica se cierra en diástole,
+la presión decae exponencialmente con una constante de tiempo igual a $RC$ \cite{westerhof2009}.
+Durante la sístole, el modelo falla, al carecer de elementos inerciales, el circuito de primer orden asume una respuesta instantánea frente a 
+la aceleración de la sangre y su impedancia cae a cero en altas frecuencias \cite{westerhof2009}. 
+Físicamente, esto hace imposible que el modelo clásico reproduzca características de alta frecuencia como el punto 
+de inflexión y el aumento de presión en la aorta.
+\subsection{Transición a Modelos de Orden Superior}
+Para capturar estos transitorios, la propuesta es un modelo de cuatro elementos ($RLCR$) que 
+integra inertancia arterial total ($L$) \cite{segers2003} y  la impedancia característica ($Z_c$). 
+Topológicamente, este componente inductivo incorpora la inercia de la masa sanguínea, que permiten moldear la 
+incisura dicrótica tras el cierre de la válvula aórtica.
+%%%%
+\section{Formulación del modelo y Restricciones de 
 interconexión}
+\begin{figure}[h]
+    \centering
+    \begin{circuitikz}[american, thick]
+        % Fuente de flujo y nodo 1
+        \draw (0,0) to[I, l=$Q(t)$] (0,3) 
+              node[circ]{} node[above left]{$1$};
+        % Inertancia y nodo 2
+        \draw (0,3) to[L, l=$L_f$, i=$Q_L$] (4,3) 
+              node[circ]{} node[above right]{$2$};
+        % Disipador y Capacitancia en paralelo
+        \draw (4,3) to[R, l=$R_f$] (4,0);
+        \draw (4,3) to[short] (7,3) to[C, l=$C_f$] (7,0);
+        % Retorno (Nodo 0 - Referencia)
+        \draw (0,0) to[short] (7,0) 
+              node[circ, pos=0.5]{} node[below]{$0$ (Ref)};
+    \end{circuitikz}
+    \caption{Equivalente eléctrico del modelo hemodinámico RLCR.}
+\end{figure}
+\subsection{Relaciones Constitutivas de Rama en el Dominio de Laplace}
+En el modelo de parámetros agrupados, cada componente vascular se abstrae como una rama generalizada del grafo lineal.
+Esta estructura combina un elemento pasivo, caracterizado por sus variables de esfuerzo ($e_{ep}$) y flujo ($f_{ep}$), 
+con fuentes independientes de esfuerzo($e_{es}$) en serie y de flujo ($f_{es}$) en paralelo. Operando en el dominio Laplace, la dinámica 
+del lecho vascular se rige por la matriz de admitancia generalizada del grafo $Y(s)$, la cual relaciona
+las variables pasivas de la red mediante $f_{ep}(s) = Y(s)e_{ep}(s)$ \cite{wellstead1979}.
+\subsection{Manejo de los transitorios y equivalencia de las fuentes}
+Se pueden incorporar las condiciones iniciales del sistema hemodinámico, como la presión diastólica o el volumen sanguíneo residual,
+sin alterar la estructura de las ecuaciones. Al aplicar la transformada de Laplace a las relaciones constitutivas de almacenamiento de
+energía (complianza e inertancia), los términos iniciales se comportan como fuentes impulsivas equivalentes integradas directamente a 
+cada rama. Además, dado que el sistema arterial es excitado por el flujo de eyección ventricular, el principio de equivalencia permite 
+transformar cualquier fuente de esfuerzo en serie en una fuente de flujo en paralelo, lo que resulta indispensable para homogeneizar la red \cite{wellstead1979}.
+\subsection{Restricciones}
+El principio fisiológico de conservación de masa de la sangre se manifiesta como una restricción de continuidad de flujo volumétrico en los 
+nodos del sistema. Esta restricción se codifica matricialmente mediante la matriz reducida de cortes de nodo $C_n$, estableciendo el 
+balance fundamental $C_n f_{ep}(s) = C_n f_{es}(s)$. Al estar el modelo impulsado de forma primaria por una fuente de flujo, se utilizará el análisis nodal.
+\subsection{Matriz de Admitancia Generalizada para Nodos}
+Sustituyendo la ecuación de admitancia generalizada en la restricción de cortes de nodo, el comportamiento del sistema queda encapsulado 
+en la matriz de admitancia generalizada nodal, definida como $P(s) = C_n Y(s) C_n'$. El modelo matemático se completa al despejar 
+el vector de esfuerzos de nodo $e_n(s)$, que representa anatómicamente las presiones arteriales locales, mediante la inversión 
+matricial $e_n(s) = P^{-1}(s)F(s)$, donde $F(s)$ consolida el vector de flujos fuente inyectados al sistema vascular \cite{wellstead1979}. 
+\subsection{El Grafo Lineal Orientado y Nodos del Sistema}
+El sistema hemodinámico RLCR (Figura 1) se abstrae en un grafo lineal compuesto (Figura 2) por un nodo de referencia (Nodo 0, presión venosa central) y 
+dos nodos independientes: el Nodo 1 (raíz aórtica) y el Nodo 2 (árbol arterial sistémico). Las ramas pasivas corresponden a la 
+inertancia sanguínea ($L_f$, Rama 1), la resistencia vascular periférica ($R_f$) y la complianza arterial ($C_f$, Rama 2).
+El gasto cardíaco se modela como una fuente de flujo ideal $Q(t)$ incidente en el Nodo 1.
+
+\subsection{Matriz Reducida de Cortes de Nodo ($C_n$)}
+\begin{figure}[htbp]
+    \centering
+    % Ajusta el multiplicador 0.8 para hacer la imagen más grande o más pequeña
+    \includegraphics[width=0.4\textwidth]{linearGraphImage.png}
+    \caption{Grafo lineal orientado del modelo hemodinámico RLCR}
+    \label{fig:grafo_topologia}
+\end{figure}
+
+Definiendo el vector de flujos pasivos de las ramas como $f_{ep}(s) = [Q_{L_f}(s), Q_{R_f}(s), Q_{C_f}(s)]^T$, la restricción de continuidad global se formula como $C_n f_{ep}(s) = F(s)$ \cite{wellstead1979}. El vector $F(s)$ contiene las excitaciones externas; dado que el gasto cardíaco $Q(s)$ ingresa exclusivamente al Nodo 1 y no existen fuentes incidentes en el Nodo 2, el balance topológico del sistema hemodinámico queda rigurosamente definido por la siguiente ecuación matricial:
+
+\begin{equation}
+\begin{bmatrix} 
+1 & 0 & 0 \\ 
+-1 & 1 & 1 
+\end{bmatrix} 
+\begin{bmatrix} 
+Q_{L_f}(s) \\ 
+Q_{R_f}(s) \\ 
+Q_{C_f}(s) 
+\end{bmatrix} = 
+\begin{bmatrix} 
+Q(s) \\ 
+0 
+\end{bmatrix}
+\end{equation}
+
+
 \section{Síntesis de la Dinámica Nodal}
+
+\subsection{Matriz de Admitancia Generalizada de las Ramas ($Y(s)$)}
+En el dominio de la frecuencia compleja, las relaciones constitutivas de los componentes vasculares se agrupan en la matriz de admitancia generalizada del sistema $Y(s)$ \cite{wellstead1979}. Al no existir acoplamientos mutuos entre las ramas pasivas, esta es una matriz diagonal de dimensión $3 \times 3$, donde cada término $y_{ii}$ representa el inverso de la impedancia generalizada de la rama correspondiente \cite{wellstead1979}.
+
+Para la Rama 1 (inertancia sanguínea $L_f$), la admitancia es $1/(sL_f)$. Para la Rama 2 (resistencia periférica $R_f$), la admitancia es $1/R_f$. Para la Rama 3 (complianza arterial $C_f$), la admitancia es $sC_f$. Así, la matriz se define formalmente como:
+
+\begin{equation}
+Y(s) = \begin{bmatrix}
+\frac{1}{sL_f} & 0 & 0 \\
+0 & \frac{1}{R_f} & 0 \\
+0 & 0 & sC_f
+\end{bmatrix}
+\end{equation}
+
+\subsection{Matriz de Admitancia Generalizada Nodal ($P(s)$)}
+Sustituyendo la relación constitutiva de las ramas $f_{ep}(s) = Y(s)e_{ep}(s)$ en la ecuación de restricción topológica (1), y reconociendo que los esfuerzos de rama se vinculan con los esfuerzos de nodo mediante la transpuesta de la matriz de cortes ($e_{ep}(s) = C_n^T e_n(s)$), se obtiene la ecuación rectora del sistema nodal: $C_n Y(s) C_n^T e_n(s) = F(s)$ \cite{wellstead1979}. 
+
+El núcleo de esta transformación es la Matriz de Admitancia Generalizada Nodal, definida como $P(s) = C_n Y(s) C_n^T$ \cite{wellstead1979}. Ejecutando el producto matricial con la topología previamente establecida:
+
+\begin{equation}
+P(s) = \begin{bmatrix}
+1 & 0 & 0 \\
+-1 & 1 & 1
+\end{bmatrix}
+\begin{bmatrix}
+\frac{1}{sL_f} & 0 & 0 \\
+0 & \frac{1}{R_f} & 0 \\
+0 & 0 & sC_f
+\end{bmatrix}
+\begin{bmatrix}
+1 & -1 \\
+0 & 1 \\
+0 & 1
+\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+P(s) = \begin{bmatrix}
+\frac{1}{sL_f} & -\frac{1}{sL_f} \\
+-\frac{1}{sL_f} & \frac{1}{sL_f} + \frac{1}{R_f} + sC_f
+\end{bmatrix}
+\end{equation}
+
+Físicamente, el término $P_{22}$ de la Ecuación (4) consolida las tres admitancias incidentes en el Nodo 2, evidenciando cómo la topología dicta la respuesta dinámica del árbol arterial.
+
+\subsection{Resolución del Modelo y Funciones de Transferencia}
+El estado completo del sistema se determina resolviendo algebraicamente el vector de esfuerzos de nodo $e_n(s) = [P_1(s), P_2(s)]^T$, invirtiendo la matriz nodal $P(s)$ \cite{wellstead1979}:
+
+\begin{equation}
+\begin{bmatrix} P_1(s) \\ P_2(s) \end{bmatrix} = P^{-1}(s) \begin{bmatrix} Q(s) \\ 0 \end{bmatrix}
+\end{equation}
+
+Desarrollando el sistema de ecuaciones simultáneas a partir de (5):
+\begin{align}
+\frac{1}{sL_f} P_1(s) - \frac{1}{sL_f} P_2(s) &= Q(s) \\
+-\frac{1}{sL_f} P_1(s) + \left(\frac{1}{sL_f} + \frac{1}{R_f} + sC_f\right) P_2(s) &= 0
+\end{align}
+
+Despejando $P_1(s)$ de la Ecuación (7) y sustituyendo en (6), se obtienen las funciones de transferencia definitivas para la presión aórtica ($P_1$) y la presión arterial sistémica ($P_2$) frente a la inyección ventricular $Q(s)$:
+
+\begin{equation}
+H_2(s) = \frac{P_2(s)}{Q(s)} = \frac{R_f}{s R_f C_f + 1}
+\end{equation}
+
+\begin{equation}
+H_1(s) = \frac{P_1(s)}{Q(s)} = sL_f + \frac{R_f}{s R_f C_f + 1} = \frac{s^2 L_f C_f R_f + sL_f + R_f}{s R_f C_f + 1}
+\end{equation}
+
+La Ecuación (9) demuestra matemáticamente el objetivo de este modelado: la función de transferencia de la presión aórtica proximal $H_1(s)$ incluye dinámica de segundo orden (presencia de $s^2$ en el numerador), lo que introduce los ceros complejos responsables de la muesca dicrótica generada por la inertancia de la sangre. En contraste, la presión periférica $H_2(s)$ muestra un filtrado pasa-bajas de primer orden (suavizado de la onda pulsátil).
 \section{Simulación}
+\bibliographystyle{ieeetr}
+\bibliography{references}
 \end{document}
