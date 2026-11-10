@@ -9,7 +9,7 @@
 \usepackage{tikz}
 
 \begin{document}
-\title{Proyecto}
+\title{Análisis del Modelo Windkessel Modificado mediante Teoría de Grafos}
 \author{Roberto Damián Tentle\\
 \textit{Maestría en Ingeniería Eléctrica, 
 Universidad Nacional Autónoma de México}}
@@ -137,7 +137,6 @@ Y(s) = \begin{bmatrix}
 \subsection{Matriz de Admitancia Generalizada Nodal ($P(s)$)}
 Sustituyendo la relación constitutiva de las ramas $f_{ep}(s) = Y(s)e_{ep}(s)$ en la ecuación de restricción topológica (1), y reconociendo que los esfuerzos de rama se vinculan con los esfuerzos de nodo mediante la transpuesta de la matriz de cortes ($e_{ep}(s) = C_n^T e_n(s)$), se obtiene la ecuación rectora del sistema nodal: $C_n Y(s) C_n^T e_n(s) = F(s)$ \cite{wellstead1979}. 
 
-El núcleo de esta transformación es la Matriz de Admitancia Generalizada Nodal, definida como $P(s) = C_n Y(s) C_n^T$ \cite{wellstead1979}. Ejecutando el producto matricial con la topología previamente establecida:
 
 \begin{equation}
 P(s) = \begin{bmatrix}
@@ -163,7 +162,6 @@ P(s) = \begin{bmatrix}
 \end{bmatrix}
 \end{equation}
 
-Físicamente, el término $P_{22}$ de la Ecuación (4) consolida las tres admitancias incidentes en el Nodo 2, evidenciando cómo la topología dicta la respuesta dinámica del árbol arterial.
 
 \subsection{Resolución del Modelo y Funciones de Transferencia}
 El estado completo del sistema se determina resolviendo algebraicamente el vector de esfuerzos de nodo $e_n(s) = [P_1(s), P_2(s)]^T$, invirtiendo la matriz nodal $P(s)$ \cite{wellstead1979}:
@@ -188,8 +186,6 @@ H_2(s) = \frac{P_2(s)}{Q(s)} = \frac{R_f}{s R_f C_f + 1}
 H_1(s) = \frac{P_1(s)}{Q(s)} = sL_f + \frac{R_f}{s R_f C_f + 1} = \frac{s^2 L_f C_f R_f + sL_f + R_f}{s R_f C_f + 1}
 \end{equation}
 
-La Ecuación (9) demuestra matemáticamente el objetivo de este modelado: la función de transferencia de la presión aórtica proximal $H_1(s)$ incluye dinámica de segundo orden (presencia de $s^2$ en el numerador), lo que introduce los ceros complejos responsables de la muesca dicrótica generada por la inertancia de la sangre. En contraste, la presión periférica $H_2(s)$ muestra un filtrado pasa-bajas de primer orden (suavizado de la onda pulsátil).
-\section{Simulación}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 \end{document}
